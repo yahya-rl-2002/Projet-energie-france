@@ -192,6 +192,44 @@ source("05_Prevision/executer_tous_prevision.R")
 | ARIMA | 7,399 | 13.01 | -0.323 | - |
 | TBATS | 7,581 | 13.13 | -0.389 | - |
 
+### Visualisations des résultats
+
+#### 📊 Comparaison des modèles
+
+![Comparaison des modèles](docs/images/comparaison_modeles_complete.png)
+
+*Comparaison complète des 4 modèles de séries temporelles avec toutes les métriques d'évaluation (RMSE, MAPE, R², Directional Accuracy)*
+
+#### 🔮 Prévisions multi-horizons
+
+![Prévisions multi-horizons](docs/images/previsions_multi_horizons.png)
+
+*Prévisions de la consommation électrique pour différents horizons : 1h, 6h, 24h, 48h, 72h, 168h (1 semaine), 720h (1 mois)*
+
+#### 📈 Évolution temporelle
+
+![Évolution temporelle](docs/images/evolution_temporelle.png)
+
+*Évolution de la consommation électrique française de 2012 à 2025 (1,154,808 observations horaires)*
+
+#### 🔍 Décomposition saisonnière
+
+![Décomposition saisonnière](docs/images/decomposition_saisonniere_avancee.png)
+
+*Décomposition STL de la série temporelle : tendance, saisonnalité (journalière, hebdomadaire, annuelle) et résidus*
+
+#### ✅ Validation croisée
+
+![Validation croisée](docs/images/validation_croisee.png)
+
+*Résultats de la validation croisée temporelle pour évaluer la robustesse des modèles sur différentes périodes*
+
+#### 🎯 Analyse de scénarios
+
+![Scénarios](docs/images/comparaison_scenarios.png)
+
+*Comparaison des prévisions selon trois scénarios : optimiste, réaliste et pessimiste avec intervalles de confiance*
+
 ### Insights clés
 
 - **Saisonnalité forte** : Patterns journaliers, hebdomadaires et annuels identifiés

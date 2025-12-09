@@ -32,12 +32,17 @@ data/resultats_nouveaux/**/*.csv
 data/resultats_nouveaux/**/*.png
 data/resultats_nouveaux/**/*.pdf
 
-# Figures générées
+# Figures générées (toutes sauf celles dans docs/images/)
 figures/**/*.png
 figures/**/*.pdf
 figures/**/*.html
 figures/**/*.js
 figures/**/*.css
+
+# Garder les images de documentation pour GitHub
+!docs/images/*.png
+!docs/images/*.jpg
+!docs/images/*.jpeg
 
 # Logs
 logs/*.log
