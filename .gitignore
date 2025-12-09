@@ -14,6 +14,9 @@
 
 # Data files (trop volumineux pour GitHub)
 data/dataset_complet.csv
+data/dataset_complet*.csv
+**/dataset_complet*.csv
+**/*backup*.csv
 data/RTE/*.xls
 data/RTE/*.xlsx
 data/RTE/*.csv
@@ -21,6 +24,8 @@ data/data_gouv/*.csv
 data/data_gouv/*.json
 data/archive_anciennes_donnees/**/*
 data/archive_anciens_scripts/**/*
+01_Donnees/data/dataset_complet*.csv
+01_Donnees/data/*backup*.csv
 
 # Résultats générés (peuvent être régénérés)
 data/resultats_nouveaux/**/*.csv
