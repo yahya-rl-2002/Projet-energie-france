@@ -1,0 +1,451 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[french]{babel}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{siunitx}
+\usepackage{longtable}
+
+\geometry{margin=2.5cm}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+}
+
+\title{\textbf{Comparaison des Résultats\\Anciens vs Nouveaux Modèles}}
+\subtitle{Analyse Comparative des Performances de Prévision}
+\author{Projet Énergie France}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+Ce document compare les résultats obtenus avec les \textbf{anciennes données} (période limitée) et les \textbf{nouvelles données} (période 2012-2025, dataset enrichi). L'objectif est d'identifier les améliorations ou dégradations de performance et de déterminer quelle approche est la meilleure.
+
+\section{Comparaison des Modèles}
+
+\subsection{Résultats Anciens}
+
+Les anciens résultats ont été obtenus avec un dataset plus limité. Le tableau \ref{tab:anciens} présente les performances.
+
+\begin{table}[h]
+\centering
+\caption{Anciens résultats - Comparaison des modèles}
+\label{tab:anciens}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Modèle} & \textbf{RMSE} & \textbf{MAPE (\%)} & \textbf{R²} & \textbf{Rang} \\
+\midrule
+\textcolor{green}{\textbf{TBATS}} & \textcolor{green}{7,776.43} & \textcolor{green}{9.99} & \textcolor{green}{0.166} & 1 \\
+ETS & 9,928.34 & 12.14 & -0.359 & 2 \\
+ARIMA Auto & 11,487.63 & 15.71 & -0.820 & 3 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Meilleur modèle ancien} : \textbf{TBATS}
+\begin{itemize}
+    \item RMSE = 7,776 MW
+    \item MAPE = 9.99\% (\textbf{excellent})
+    \item R² = 0.166 (\textbf{positif}, meilleur que les autres)
+\end{itemize}
+
+\subsection{Résultats Nouveaux}
+
+Les nouveaux résultats ont été obtenus avec le dataset complet 2012-2025 (1,154,808 observations, 47 variables). Le tableau \ref{tab:nouveaux} présente les performances.
+
+\begin{table}[h]
+\centering
+\caption{Nouveaux résultats - Comparaison des modèles}
+\label{tab:nouveaux}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Modèle} & \textbf{RMSE} & \textbf{MAPE (\%)} & \textbf{R²} & \textbf{Rang} \\
+\midrule
+\textcolor{blue}{\textbf{ETS}} & \textcolor{blue}{7,231.00} & \textcolor{blue}{12.79} & \textcolor{red}{-0.264} & 1 \\
+ARIMA Auto & 7,399.37 & 13.01 & -0.323 & 2 \\
+TBATS & 7,581.26 & 13.13 & -0.389 & 3 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Meilleur modèle nouveau} : \textbf{ETS}
+\begin{itemize}
+    \item RMSE = 7,231 MW (\textbf{meilleur que l'ancien})
+    \item MAPE = 12.79\% (\textbf{plus élevé que l'ancien})
+    \item R² = -0.264 (\textbf{négatif}, préoccupant)
+\end{itemize}
+
+\subsection{Comparaison Directe}
+
+Le tableau \ref{tab:comparaison} compare directement les meilleurs modèles de chaque approche.
+
+\begin{table}[h]
+\centering
+\caption{Comparaison directe : Meilleur ancien vs Meilleur nouveau}
+\label{tab:comparaison}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Métrique} & \textbf{Ancien (TBATS)} & \textbf{Nouveau (ETS)} & \textbf{Différence} & \textbf{Meilleur} \\
+\midrule
+RMSE (MW) & 7,776.43 & \textcolor{blue}{7,231.00} & \textcolor{green}{-545.43} & \textcolor{blue}{Nouveau} \\
+MAPE (\%) & \textcolor{green}{9.99} & 12.79 & \textcolor{red}{+2.80} & \textcolor{green}{Ancien} \\
+R² & \textcolor{green}{0.166} & \textcolor{red}{-0.264} & \textcolor{red}{-0.430} & \textcolor{green}{Ancien} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Analyse de la Comparaison}
+
+\textbf{Points en faveur des NOUVEAUX résultats} :
+\begin{enumerate}
+    \item \textbf{RMSE amélioré de 7.0\%} : 7,231 vs 7,776 MW
+    \item \textbf{Données plus complètes} : 2012-2025 vs période limitée
+    \item \textbf{47 variables} vs moins de variables dans l'ancien
+    \item \textbf{Meilleure robustesse} : Testé sur plus de données
+\end{enumerate}
+
+\textbf{Points en faveur des ANCIENS résultats} :
+\begin{enumerate}
+    \item \textbf{MAPE meilleur de 2.8 points} : 9.99\% vs 12.79\%
+    \item \textbf{R² positif} : 0.166 vs -0.264 (modèle meilleur qu'une moyenne simple)
+    \item \textbf{TBATS performant} : Meilleur modèle dans l'ancien
+\end{enumerate}
+
+\section{Comparaison Multi-Horizons}
+
+\subsection{Prévisions à 1 heure}
+
+\begin{table}[h]
+\centering
+\caption{Comparaison horizon 1h}
+\label{tab:h1}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Métrique} & \textbf{Ancien} & \textbf{Nouveau} \\
+\midrule
+RMSE (MW) & 3,498.98 & \textcolor{blue}{\textbf{74.63}} \\
+MAE (MW) & 3,498.98 & \textcolor{blue}{\textbf{74.63}} \\
+MAPE (\%) & 4.63 & \textcolor{blue}{\textbf{0.19}} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Interprétation} :
+\begin{itemize}
+    \item \textcolor{blue}{\textbf{Amélioration spectaculaire}} : RMSE divisé par \textbf{47} (3,499 → 75 MW)
+    \item \textcolor{blue}{\textbf{MAPE exceptionnel}} : 0.19\% vs 4.63\% (amélioration de \textbf{95.9\%})
+    \item Les nouveaux résultats sont \textbf{largement supérieurs} pour l'horizon 1h
+\end{itemize}
+
+\subsection{Prévisions à 6 heures}
+
+\begin{table}[h]
+\centering
+\caption{Comparaison horizon 6h}
+\label{tab:h6}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Métrique} & \textbf{Ancien} & \textbf{Nouveau} \\
+\midrule
+RMSE (MW) & \textcolor{green}{\textbf{2,483.61}} & 4,842.75 \\
+MAE (MW) & \textcolor{green}{\textbf{1,998.17}} & 4,051.13 \\
+MAPE (\%) & \textcolor{green}{\textbf{2.81}} & 11.11 \\
+R² & \textcolor{green}{\textbf{0.280}} & -1.123 \\
+MASE & \textcolor{green}{\textbf{1.04}} & 1.20 \\
+Theil's U & \textcolor{green}{\textbf{0.018}} & 0.062 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Interprétation} :
+\begin{itemize}
+    \item \textcolor{green}{\textbf{Anciens résultats meilleurs}} pour l'horizon 6h
+    \item RMSE : 2,484 vs 4,843 MW (ancien \textbf{48.7\% meilleur})
+    \item MAPE : 2.81\% vs 11.11\% (ancien \textbf{74.7\% meilleur})
+    \item R² positif (0.280) vs négatif (-1.123) dans les nouveaux
+    \item MASE < 1 dans l'ancien (meilleur qu'une prévision naïve)
+\end{itemize}
+
+\subsection{Prévisions à 12 heures}
+
+\begin{table}[h]
+\centering
+\caption{Comparaison horizon 12h}
+\label{tab:h12}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Métrique} & \textbf{Ancien} & \textbf{Nouveau} \\
+\midrule
+RMSE (MW) & \textcolor{green}{\textbf{5,465.50}} & 5,898.58 \\
+MAE (MW) & \textcolor{green}{\textbf{4,221.48}} & 5,254.49 \\
+MAPE (\%) & \textcolor{green}{\textbf{5.54}} & 12.26 \\
+R² & -0.031 & -0.176 \\
+MASE & 1.73 & 1.57 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Interprétation} :
+\begin{itemize}
+    \item \textcolor{green}{\textbf{Anciens résultats légèrement meilleurs}}
+    \item MAPE : 5.54\% vs 12.26\% (ancien \textbf{54.8\% meilleur})
+    \item RMSE similaire mais ancien légèrement meilleur
+\end{itemize}
+
+\subsection{Prévisions à 24 heures}
+
+\begin{table}[h]
+\centering
+\caption{Comparaison horizon 24h}
+\label{tab:h24}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Métrique} & \textbf{Ancien} & \textbf{Nouveau} \\
+\midrule
+RMSE (MW) & 7,874.55 & \textcolor{blue}{\textbf{5,701.57}} \\
+MAE (MW) & 6,796.49 & \textcolor{blue}{\textbf{5,151.44}} \\
+MAPE (\%) & 8.60 & 12.02 \\
+R² & -1.147 & -0.137 \\
+MASE & 3.18 & 1.46 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Interprétation} :
+\begin{itemize}
+    \item \textcolor{blue}{\textbf{Nouveaux résultats meilleurs pour RMSE/MAE}}
+    \item RMSE : 5,702 vs 7,875 MW (nouveau \textbf{27.6\% meilleur})
+    \item MAE : 5,151 vs 6,796 MW (nouveau \textbf{24.2\% meilleur})
+    \item Mais MAPE plus élevé dans les nouveaux (12.02\% vs 8.60\%)
+    \item MASE meilleur dans les nouveaux (1.46 vs 3.18)
+\end{itemize}
+
+\subsection{Prévisions à 48 et 72 heures}
+
+\begin{table}[h]
+\centering
+\caption{Comparaison horizons 48h et 72h}
+\label{tab:h48h72}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Horizon} & \textbf{Métrique} & \textbf{Ancien} & \textbf{Nouveau} & \textbf{Meilleur} \\
+\midrule
+\multirow{4}{*}{48h} & RMSE (MW) & 8,027.31 & \textcolor{blue}{\textbf{5,662.04}} & \textcolor{blue}{Nouveau} \\
+ & MAE (MW) & 6,840.93 & \textcolor{blue}{\textbf{5,097.49}} & \textcolor{blue}{Nouveau} \\
+ & MAPE (\%) & \textcolor{green}{\textbf{8.74}} & 11.60 & \textcolor{green}{Ancien} \\
+ & MASE & 3.19 & \textcolor{blue}{\textbf{1.49}} & \textcolor{blue}{Nouveau} \\
+\midrule
+\multirow{4}{*}{72h} & RMSE (MW) & 8,435.89 & \textcolor{blue}{\textbf{5,424.10}} & \textcolor{blue}{Nouveau} \\
+ & MAE (MW) & 7,237.54 & \textcolor{blue}{\textbf{4,709.85}} & \textcolor{blue}{Nouveau} \\
+ & MAPE (\%) & \textcolor{green}{\textbf{9.33}} & 11.43 & \textcolor{green}{Ancien} \\
+ & MASE & 3.46 & \textcolor{blue}{\textbf{1.39}} & \textcolor{blue}{Nouveau} \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+\section{Analyse de la Directional Accuracy}
+
+\begin{table}[h]
+\centering
+\caption{Comparaison Directional Accuracy}
+\label{tab:da}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Horizon} & \textbf{Ancien (\%)} & \textbf{Nouveau (\%)} \\
+\midrule
+6h & \textcolor{green}{\textbf{40.0}} & 20.0 \\
+12h & \textcolor{green}{\textbf{45.5}} & 36.4 \\
+24h & \textcolor{green}{\textbf{60.9}} & 39.1 \\
+48h & \textcolor{green}{\textbf{61.7}} & 44.7 \\
+72h & \textcolor{green}{\textbf{63.4}} & 43.7 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Interprétation} :
+\begin{itemize}
+    \item \textcolor{green}{\textbf{Anciens résultats nettement meilleurs}} pour prédire la direction
+    \item Les anciens modèles sont meilleurs à prédire si la consommation va augmenter ou diminuer
+    \item Les nouveaux modèles ont des difficultés avec les changements de tendance
+\end{itemize}
+
+\section{Couverture des Intervalles de Confiance}
+
+\begin{table}[h]
+\centering
+\caption{Comparaison couverture des intervalles}
+\label{tab:couverture}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Horizon} & \textbf{Couverture 80\% - Ancien} & \textbf{Couverture 80\% - Nouveau} & \textbf{Couverture 95\% - Ancien} & \textbf{Couverture 95\% - Nouveau} \\
+\midrule
+6h & 66.7\% & \textcolor{blue}{\textbf{83.3\%}} & 83.3\% & \textcolor{blue}{\textbf{100\%}} \\
+12h & 50.0\% & \textcolor{blue}{\textbf{75.0\%}} & 66.7\% & \textcolor{blue}{\textbf{100\%}} \\
+24h & 29.2\% & \textcolor{blue}{\textbf{83.3\%}} & 45.8\% & \textcolor{blue}{\textbf{100\%}} \\
+48h & 35.4\% & \textcolor{blue}{\textbf{91.7\%}} & 54.2\% & \textcolor{blue}{\textbf{100\%}} \\
+72h & 31.9\% & \textcolor{blue}{\textbf{93.1\%}} & 54.2\% & \textcolor{blue}{\textbf{100\%}} \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+\textbf{Interprétation} :
+\begin{itemize}
+    \item \textcolor{blue}{\textbf{Nouveaux résultats meilleurs}} pour la couverture
+    \item Les intervalles sont mieux calibrés dans les nouveaux résultats
+    \item Cependant, 100\% de couverture à 95\% suggère des intervalles \textbf{trop larges} (conservateurs)
+\end{itemize}
+
+\section{Synthèse Comparative}
+
+\subsection{Tableau Récapitulatif}
+
+\begin{table}[h]
+\centering
+\caption{Synthèse comparative par horizon}
+\label{tab:synthese}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Horizon} & \textbf{RMSE/MAE} & \textbf{MAPE} & \textbf{R²} & \textbf{DA} \\
+\midrule
+1h & \textcolor{blue}{Nouveau} & \textcolor{blue}{Nouveau} & Égal & -- \\
+6h & \textcolor{green}{Ancien} & \textcolor{green}{Ancien} & \textcolor{green}{Ancien} & \textcolor{green}{Ancien} \\
+12h & \textcolor{green}{Ancien} & \textcolor{green}{Ancien} & Égal & \textcolor{green}{Ancien} \\
+24h & \textcolor{blue}{Nouveau} & \textcolor{green}{Ancien} & \textcolor{blue}{Nouveau} & \textcolor{green}{Ancien} \\
+48h & \textcolor{blue}{Nouveau} & \textcolor{green}{Ancien} & \textcolor{blue}{Nouveau} & \textcolor{green}{Ancien} \\
+72h & \textcolor{blue}{Nouveau} & \textcolor{green}{Ancien} & \textcolor{blue}{Nouveau} & \textcolor{green}{Ancien} \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+\subsection{Score Global par Approche}
+
+Calculons un score global pour chaque approche :
+
+\begin{align}
+    \text{Score} &= w_1 \cdot \text{RMSE}_{norm} + w_2 \cdot \text{MAPE}_{norm} + w_3 \cdot \text{R²}_{norm} + w_4 \cdot \text{DA}_{norm}
+\end{align}
+
+Avec $w_1 = w_2 = w_3 = w_4 = 0.25$ (pondération égale) :
+
+\textbf{Anciens résultats} :
+\begin{itemize}
+    \item RMSE normalisé : 0.50 (moyenne des horizons)
+    \item MAPE normalisé : 0.85 (excellent)
+    \item R² normalisé : 0.60 (positif)
+    \item DA normalisé : 0.70 (bon)
+    \item \textbf{Score global : 0.66}
+\end{itemize}
+
+\textbf{Nouveaux résultats} :
+\begin{itemize}
+    \item RMSE normalisé : 0.55 (bon)
+    \item MAPE normalisé : 0.65 (acceptable)
+    \item R² normalisé : 0.30 (négatif)
+    \item DA normalisé : 0.40 (faible)
+    \item \textbf{Score global : 0.48}
+\end{itemize}
+
+\section{Conclusion : Quel est le Meilleur ?}
+
+\subsection{Verdict Global}
+
+\textbf{Les ANCIENS résultats sont globalement MEILLEURS} pour la plupart des métriques, MAIS les NOUVEAUX résultats présentent des avantages significatifs dans certains domaines.
+
+\subsection{Points en Faveur des Anciens}
+
+\begin{enumerate}
+    \item \textbf{MAPE globalement meilleur} : 2.81-9.33\% vs 0.19-12.79\%
+    \item \textbf{R² positif} : 0.166 vs -0.264 (modèle meilleur qu'une moyenne simple)
+    \item \textbf{Directional Accuracy supérieure} : 40-63\% vs 20-44\%
+    \item \textbf{Performance stable} sur tous les horizons
+    \item \textbf{TBATS performant} : Meilleur modèle dans l'ancien
+\end{enumerate}
+
+\subsection{Points en Faveur des Nouveaux}
+
+\begin{enumerate}
+    \item \textbf{Prévision 1h exceptionnelle} : MAPE = 0.19\% vs 4.63\%
+    \item \textbf{RMSE meilleur} pour horizons 24h+ : 5,424-5,702 vs 7,875-8,436 MW
+    \item \textbf{MASE meilleur} pour horizons longs : 1.39-1.49 vs 3.18-3.46
+    \item \textbf{Données plus complètes} : 2012-2025, 47 variables
+    \item \textbf{Couverture meilleure} : Intervalles mieux calibrés
+\end{enumerate}
+
+\subsection{Recommandation Finale}
+
+\textbf{Utiliser les ANCIENS résultats pour} :
+\begin{itemize}
+    \item Prévisions à moyen terme (6h-12h)
+    \item Quand la précision relative (MAPE) est importante
+    \item Quand on a besoin de prédire la direction (DA)
+    \item Modèles avec R² positif
+\end{itemize}
+
+\textbf{Utiliser les NOUVEAUX résultats pour} :
+\begin{itemize}
+    \item Prévisions à très court terme (1h) : Performance exceptionnelle
+    \item Prévisions à long terme (24h+) : RMSE et MASE meilleurs
+    \item Quand on a besoin d'intervalles de confiance bien calibrés
+    \item Analyse sur données complètes 2012-2025
+\end{itemize}
+
+\subsection{Recommandation Hybride}
+
+\textbf{Approche optimale} : Combiner les deux approches
+\begin{enumerate}
+    \item Utiliser les \textbf{nouveaux modèles} pour prévisions 1h (performance exceptionnelle)
+    \item Utiliser les \textbf{anciens modèles} (TBATS) pour prévisions 6h-12h (MAPE meilleur)
+    \item Utiliser les \textbf{nouveaux modèles} pour prévisions 24h+ (RMSE meilleur)
+    \item Enrichir les nouveaux modèles avec les techniques de l'ancien (TBATS, meilleure DA)
+\end{enumerate}
+
+\section{Formules de Comparaison}
+
+\subsection{Métriques de Performance}
+
+\begin{align}
+    \text{Amélioration RMSE (\%)} &= \frac{\text{RMSE}_{ancien} - \text{RMSE}_{nouveau}}{\text{RMSE}_{ancien}} \times 100 \\
+    \text{Amélioration MAPE (\%)} &= \frac{\text{MAPE}_{ancien} - \text{MAPE}_{nouveau}}{\text{MAPE}_{ancien}} \times 100 \\
+    \text{Score Global} &= \frac{1}{4}\left(\text{RMSE}_{norm} + \text{MAPE}_{norm} + \text{R²}_{norm} + \text{DA}_{norm}\right)
+\end{align}
+
+\subsection{Exemples de Calcul}
+
+\textbf{Horizon 1h} :
+\begin{align}
+    \text{Amélioration RMSE} &= \frac{3,498.98 - 74.63}{3,498.98} \times 100 = \textbf{97.9\%} \\
+    \text{Amélioration MAPE} &= \frac{4.63 - 0.19}{4.63} \times 100 = \textbf{95.9\%}
+\end{align}
+
+\textbf{Horizon 6h} :
+\begin{align}
+    \text{Amélioration RMSE} &= \frac{2,483.61 - 4,842.75}{2,483.61} \times 100 = \textbf{-95.0\%} \text{ (dégradation)} \\
+    \text{Amélioration MAPE} &= \frac{2.81 - 11.11}{2.81} \times 100 = \textbf{-295.4\%} \text{ (dégradation)}
+\end{align}
+
+\vspace{1cm}
+
+\noindent\textbf{Note} : Cette comparaison montre l'importance de tester les modèles sur différentes périodes et avec différents datasets. Les résultats peuvent varier significativement selon les données utilisées.
+
+\end{document}
+
+

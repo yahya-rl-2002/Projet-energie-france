@@ -1,0 +1,118 @@
+# R
+.Rhistory
+.Rapp.history
+.RData
+.Ruserdata
+.Rproj.user
+*.Rproj
+*.Rhistory
+.Rprofile
+
+# RStudio
+.Rsessions/
+*.Rproj.user/
+
+# Data files (trop volumineux pour GitHub)
+data/dataset_complet.csv
+data/RTE/*.xls
+data/RTE/*.xlsx
+data/RTE/*.csv
+data/data_gouv/*.csv
+data/data_gouv/*.json
+data/archive_anciennes_donnees/**/*
+data/archive_anciens_scripts/**/*
+
+# Résultats générés (peuvent être régénérés)
+data/resultats_nouveaux/**/*.csv
+data/resultats_nouveaux/**/*.png
+data/resultats_nouveaux/**/*.pdf
+
+# Figures générées
+figures/**/*.png
+figures/**/*.pdf
+figures/**/*.html
+figures/**/*.js
+figures/**/*.css
+
+# Logs
+logs/*.log
+logs/*.txt
+
+# LaTeX auxiliaires
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.fdb_latexmk
+*.fls
+*.bbl
+*.blg
+*.bcf
+*.run.xml
+
+# PDF générés (peuvent être régénérés)
+*.pdf
+!LICENSE
+
+# HTML générés
+*.html
+!**/README*.html
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# Python (si utilisé)
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+
+# Node (si utilisé)
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Archives
+*.zip
+*.tar
+*.tar.gz
+*.rar
+
+# Secrets et clés API (NE JAMAIS COMMITER)
+*.key
+*.pem
+*.env
+.env
+secrets/
+credentials/
+api_keys.txt
+
+# Cache
+.cache/
+*.cache
+

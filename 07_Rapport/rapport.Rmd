@@ -1,0 +1,304 @@
+---
+title: "Système Intelligent de Prévision Énergétique Française"
+subtitle: "Application des Méthodes de Séries Temporelles Classiques"
+author: "Votre Nom"
+date: "`r Sys.Date()`"
+output:
+  pdf_document:
+    toc: true
+    toc_depth: 3
+    number_sections: true
+    fig_caption: true
+  html_document:
+    toc: true
+    toc_depth: 3
+    number_sections: true
+    fig_caption: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  fig.width = 10,
+  fig.height = 6,
+  fig.align = "center"
+)
+
+# Charger les packages
+library(tidyverse)
+library(forecast)
+library(tseries)
+library(urca)
+library(ggplot2)
+library(knitr)
+library(kableExtra)
+```
+
+# Introduction
+
+## Contexte
+
+La prévision de la consommation électrique française est un enjeu majeur pour :
+
+- **RTE** (Réseau de Transport d'Électricité) : Gestion du réseau
+- **EDF** : Planification de la production
+- **Gouvernement** : Politiques énergétiques
+- **Entreprises** : Optimisation des coûts
+
+## Objectifs
+
+Ce projet vise à :
+
+1. **Prévoir** la consommation électrique française
+2. **Comparer** différentes méthodes de séries temporelles
+3. **Valider** les modèles statistiquement
+4. **Intégrer** des données publiques françaises
+
+## Données
+
+### Données Principales
+
+- **defi1.csv, defi2.csv, defi3.csv** : Consommation horaire
+- **74,000+ observations** : Données réelles
+
+### Données Complémentaires
+
+- **INSEE** : PIB, inflation, chômage
+- **Météo France** : Températures
+- **Eurostat** : Comparaisons européennes
+- **RTE** : Données officielles
+
+---
+
+# Méthodologie
+
+## Méthodes Utilisées
+
+### 1. Moyenne Mobile
+
+La moyenne mobile d'ordre $k$ est définie par :
+
+$$MA_t = \frac{1}{k} \sum_{i=0}^{k-1} y_{t-i}$$
+
+### 2. Modèle AR(p)
+
+Le modèle autoregressif d'ordre $p$ :
+
+$$y_t = c + \sum_{i=1}^{p} \phi_i y_{t-i} + \varepsilon_t$$
+
+où :
+- $\phi_i$ : Coefficients AR
+- $\varepsilon_t$ : Bruit blanc
+
+### 3. Modèle MA(q)
+
+Le modèle à moyenne mobile d'ordre $q$ :
+
+$$y_t = \mu + \sum_{j=1}^{q} \theta_j \varepsilon_{t-j} + \varepsilon_t$$
+
+### 4. Modèle ARMA(p,q)
+
+Combinaison AR et MA :
+
+$$y_t = c + \sum_{i=1}^{p} \phi_i y_{t-i} + \sum_{j=1}^{q} \theta_j \varepsilon_{t-j} + \varepsilon_t$$
+
+### 5. Modèle ARIMA(p,d,q)
+
+Avec différenciation d'ordre $d$ :
+
+$$\phi(B)(1-B)^d y_t = c + \theta(B) \varepsilon_t$$
+
+où $B$ est l'opérateur retard : $By_t = y_{t-1}$
+
+### 6. Modèle SARIMA(p,d,q)(P,D,Q)_s
+
+Avec saisonnalité de période $s$ :
+
+$$\Phi(B^s) \phi(B)(1-B^s)^D (1-B)^d y_t = c + \Theta(B^s) \theta(B) \varepsilon_t$$
+
+### 7. Modèle SARIMAX
+
+Avec variables exogènes :
+
+$$\Phi(B^s) \phi(B)(1-B^s)^D (1-B)^d y_t = c + \sum_{j=1}^{k} \beta_j x_{j,t} + \Theta(B^s) \theta(B) \varepsilon_t$$
+
+---
+
+# Analyse Exploratoire
+
+```{r analyse-exploratoire, eval=FALSE}
+# Charger les données
+source("../01_Donnees/combinaison_donnees.R")
+df <- combiner_toutes_donnees()
+
+# Créer série temporelle
+consommation_ts <- ts(df$Consommation, frequency = 24)
+
+# Statistiques descriptives
+summary(consommation_ts)
+```
+
+## Test de Stationnarité
+
+### Test de Dickey-Fuller Augmenté
+
+Hypothèses :
+- $H_0$ : Série non-stationnaire (racine unitaire)
+- $H_1$ : Série stationnaire
+
+```{r test-stationnarite, eval=FALSE}
+library(urca)
+test_adf <- ur.df(consommation_ts, type = "trend", lags = 10)
+summary(test_adf)
+```
+
+## Analyse ACF/PACF
+
+```{r acf-pacf, eval=FALSE}
+# ACF
+acf(consommation_ts, lag.max = 48)
+
+# PACF
+pacf(consommation_ts, lag.max = 48)
+```
+
+---
+
+# Modélisation
+
+## Sélection des Modèles
+
+### Critères de Sélection
+
+- **AIC** : Akaike Information Criterion
+  $$AIC = -2 \log(L) + 2k$$
+
+- **BIC** : Bayesian Information Criterion
+  $$BIC = -2 \log(L) + k \log(n)$$
+
+où :
+- $L$ : Vraisemblance
+- $k$ : Nombre de paramètres
+- $n$ : Nombre d'observations
+
+```{r modeles, eval=FALSE}
+# Charger les fonctions
+source("../03_Modelisation/modeles_series_temporelles.R")
+
+# Ajuster différents modèles
+modeles <- list()
+modeles[["AR(2)"]] <- ajuster_AR(train, ordre = 2)
+modeles[["MA(2)"]] <- ajuster_MA(train, ordre = 2)
+modeles[["ARMA(2,2)"]] <- ajuster_ARMA(train, p = 2, q = 2)
+modeles[["ARIMA_auto"]] <- ajuster_ARIMA_auto(train)
+modeles[["SARIMA_auto"]] <- ajuster_SARIMA_auto(train, periode_saisonniere = 24)
+```
+
+---
+
+# Validation
+
+## Tests des Résidus
+
+### Test de Ljung-Box
+
+$$Q = n(n+2) \sum_{k=1}^{h} \frac{\hat{\rho}_k^2}{n-k}$$
+
+où $\hat{\rho}_k$ est l'autocorrélation d'ordre $k$.
+
+Hypothèses :
+- $H_0$ : Résidus non corrélés
+- $H_1$ : Résidus corrélés
+
+```{r test-residus, eval=FALSE}
+# Test de Ljung-Box
+Box.test(residus, lag = 10, type = "Ljung-Box")
+```
+
+## Métriques de Performance
+
+### RMSE
+
+$$RMSE = \sqrt{\frac{1}{n} \sum_{t=1}^{n} (y_t - \hat{y}_t)^2}$$
+
+### MAE
+
+$$MAE = \frac{1}{n} \sum_{t=1}^{n} |y_t - \hat{y}_t|$$
+
+### MAPE
+
+$$MAPE = \frac{100}{n} \sum_{t=1}^{n} \left| \frac{y_t - \hat{y}_t}{y_t} \right|$$
+
+---
+
+# Résultats
+
+## Comparaison des Modèles
+
+```{r comparaison, eval=FALSE}
+# Comparer les modèles
+comparaison <- comparer_modeles(modeles, test)
+kable(comparaison, caption = "Comparaison des Modèles")
+```
+
+## Prévisions
+
+```{r previsions, eval=FALSE}
+# Prévision avec le meilleur modèle
+meilleur_modele <- modeles[[comparaison$Modele[1]]]
+prevision <- forecast(meilleur_modele, h = 24)
+
+# Visualisation
+autoplot(prevision) +
+  labs(title = "Prévision de la Consommation Électrique",
+       y = "Consommation (MW)",
+       x = "Temps")
+```
+
+---
+
+# Conclusion
+
+## Résultats Principaux
+
+1. **Meilleur modèle** : [Nom du modèle]
+2. **RMSE** : [Valeur]
+3. **MAPE** : [Valeur]%
+
+## Perspectives
+
+- Intégration de plus de variables exogènes
+- Modèles de deep learning (LSTM, Transformer)
+- Dashboard interactif (Shiny)
+- Déploiement en production
+
+---
+
+# Références
+
+1. Box, G. E. P., & Jenkins, G. M. (1976). *Time Series Analysis: Forecasting and Control*.
+
+2. Hyndman, R. J., & Athanasopoulos, G. (2021). *Forecasting: principles and practice*.
+
+3. RTE. (2023). *Bilan électrique français*.
+
+4. INSEE. (2023). *Statistiques économiques françaises*.
+
+---
+
+# Annexes
+
+## Code Complet
+
+Voir fichiers :
+- `03_Modelisation/modeles_series_temporelles.R`
+- `03_Modelisation/application_donnees_reelles.R`
+
+## Données
+
+- `data/dataset_complet.csv`
+- `data/previsions_24h.csv`
+
+

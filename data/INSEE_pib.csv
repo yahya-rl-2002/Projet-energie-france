@@ -1,0 +1,3 @@
+"DATE","TIME_PERIOD","OBS_VALUE","OBS_STATUS","OBS_QUAL","OBS_TYPE","IDBANK","FREQ","TITLE_FR","TITLE_EN","LAST_UPDATE","UNIT_MEASURE","UNIT_MULT","REF_AREA","DECIMALS","OBS_ALISSE_ESANE_PERIODICITE"
+2016-01-01,"2016",38,"A","DEF","A","010569847","A","Taux d'autonomie financière - 95.2 - Réparation de biens personnels et domestiques - 0 à 9 salariés","Rate of financial autonomy- 95.2 - Repair of personal and household goods - 0 to 9 employees","2018-09-14","POURCENT","0","FE","0","1"
+2015-01-01,"2015",35,"A","DEF","A","010569847","A","Taux d'autonomie financière - 95.2 - Réparation de biens personnels et domestiques - 0 à 9 salariés","Rate of financial autonomy- 95.2 - Repair of personal and household goods - 0 to 9 employees","2018-09-14","POURCENT","0","FE","0","2"

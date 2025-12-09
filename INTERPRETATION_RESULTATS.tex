@@ -1,0 +1,365 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[french]{babel}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{siunitx}
+
+\geometry{margin=2.5cm}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+}
+
+\title{\textbf{Interprétation des Résultats\\Modélisation de la Consommation Électrique en France}}
+\author{Analyse des Modèles de Séries Temporelles}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+Ce document présente une interprétation détaillée des résultats obtenus lors de la modélisation de la consommation électrique en France sur la période 2012-2025. L'analyse porte sur la comparaison de plusieurs modèles de séries temporelles et l'évaluation de leurs performances prédictives.
+
+\section{Données et Méthodologie}
+
+\subsection{Caractéristiques du Dataset}
+
+Le dataset utilisé contient :
+\begin{itemize}
+    \item \textbf{Période} : 2012-2025 (13 années)
+    \item \textbf{Taille} : 241 MB, 1,154,808 observations
+    \item \textbf{Variables} : 47 colonnes incluant consommation, température, calendrier, variables économiques
+    \item \textbf{Fréquence} : Données horaires
+\end{itemize}
+
+\subsection{Statistiques descriptives de la consommation}
+
+Soit $C_t$ la consommation électrique à l'instant $t$, nous avons :
+
+\begin{align}
+    \bar{C} &= \frac{1}{n}\sum_{t=1}^{n} C_t = 58,433.33 \text{ MW} \\
+    \sigma_C &= \sqrt{\frac{1}{n-1}\sum_{t=1}^{n}(C_t - \bar{C})^2} = 13,546.52 \text{ MW} \\
+    C_{\min} &= 30,521 \text{ MW} \\
+    C_{\max} &= 102,098 \text{ MW}
+\end{align}
+
+Le coefficient de variation est :
+\begin{equation}
+    CV = \frac{\sigma_C}{\bar{C}} = \frac{13,546.52}{58,433.33} = 0.232 = 23.2\%
+\end{equation}
+
+\section{Comparaison des Modèles}
+
+\subsection{Résultats de la comparaison}
+
+Trois modèles ont été comparés : ETS (Exponential Smoothing State Space), ARIMA automatique, et TBATS. Le tableau \ref{tab:comparaison} présente les résultats.
+
+\begin{table}[h]
+\centering
+\caption{Comparaison des modèles de prévision}
+\label{tab:comparaison}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Modèle} & \textbf{RMSE} & \textbf{MAPE (\%)} & \textbf{R²} & \textbf{Rang} \\
+\midrule
+ETS & 7,231.00 & 12.79 & -0.264 & 1 \\
+ARIMA Auto & 7,399.37 & 13.01 & -0.323 & 2 \\
+TBATS & 7,581.26 & 13.13 & -0.389 & 3 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Interprétation des métriques}
+
+\subsubsection{Root Mean Squared Error (RMSE)}
+
+Le RMSE mesure l'écart quadratique moyen entre les valeurs prédites et observées :
+
+\begin{equation}
+    \text{RMSE} = \sqrt{\frac{1}{n}\sum_{t=1}^{n}(C_t - \hat{C}_t)^2}
+\end{equation}
+
+\textbf{Interprétation} :
+\begin{itemize}
+    \item \textbf{ETS} : RMSE = 7,231 MW représente environ \textbf{12.4\%} de la moyenne de consommation
+    \item \textbf{ARIMA} : RMSE = 7,399 MW représente \textbf{12.7\%} de la moyenne
+    \item \textbf{TBATS} : RMSE = 7,581 MW représente \textbf{13.0\%} de la moyenne
+\end{itemize}
+
+Un RMSE de 7,231 MW signifie que, en moyenne, les prévisions s'écartent de la réalité d'environ 7,231 MW. Comparé à l'écart-type de 13,546 MW, cela représente un \textbf{amélioration de 46.6\%} par rapport à une prévision naïve utilisant simplement la moyenne.
+
+\subsubsection{Mean Absolute Percentage Error (MAPE)}
+
+Le MAPE mesure l'erreur relative moyenne :
+
+\begin{equation}
+    \text{MAPE} = \frac{100}{n}\sum_{t=1}^{n}\left|\frac{C_t - \hat{C}_t}{C_t}\right|
+\end{equation}
+
+\textbf{Interprétation} :
+\begin{itemize}
+    \item \textbf{ETS} : MAPE = 12.79\% signifie que l'erreur moyenne est de \textbf{12.79\%}
+    \item Pour une consommation de 58,433 MW, cela représente une erreur moyenne de \textbf{7,473 MW}
+    \item Un MAPE < 15\% est généralement considéré comme \textbf{acceptable} pour les prévisions énergétiques
+    \item Un MAPE < 10\% serait \textbf{excellent}, mais difficile à atteindre avec des données aussi volatiles
+\end{itemize}
+
+\subsubsection{Coefficient de Détermination (R²)}
+
+Le R² mesure la proportion de variance expliquée :
+
+\begin{equation}
+    R^2 = 1 - \frac{\sum_{t=1}^{n}(C_t - \hat{C}_t)^2}{\sum_{t=1}^{n}(C_t - \bar{C})^2}
+\end{equation}
+
+\textbf{Interprétation critique} :
+\begin{itemize}
+    \item \textbf{R² négatif} (-0.264 pour ETS) indique que le modèle fait \textbf{pire qu'une prévision naïve} utilisant simplement la moyenne
+    \item Cela suggère que les modèles de séries temporelles classiques peinent à capturer la complexité des données
+    \item \textbf{Causes possibles} :
+        \begin{enumerate}
+            \item Non-stationnarité complexe non capturée
+            \item Saisonnalités multiples (journalière, hebdomadaire, mensuelle, annuelle)
+            \item Effets exogènes non modélisés (température, événements, etc.)
+            \item Changements structurels dans la consommation
+        \end{enumerate}
+\end{itemize}
+
+\section{Évaluation Multi-Horizons}
+
+\subsection{Performance par horizon de prévision}
+
+Le tableau \ref{tab:horizons} présente les métriques d'évaluation pour différents horizons de prévision.
+
+\begin{table}[h]
+\centering
+\caption{Performance des prévisions par horizon}
+\label{tab:horizons}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lcccccc}
+\toprule
+\textbf{Horizon} & \textbf{RMSE} & \textbf{MAE} & \textbf{MAPE (\%)} & \textbf{MASE} & \textbf{sMAPE (\%)} & \textbf{Theil's U} \\
+\midrule
+1h & 74.63 & 74.63 & 0.19 & -- & 0.19 & -- \\
+6h & 4,842.75 & 4,051.13 & 11.11 & 1.20 & 10.47 & 0.062 \\
+12h & 5,898.58 & 5,254.49 & 12.26 & 1.57 & 12.47 & 0.070 \\
+24h & 5,701.57 & 5,151.44 & 12.02 & 1.46 & 12.20 & 0.068 \\
+48h & 5,662.04 & 5,097.49 & 11.60 & 1.49 & 11.91 & 0.066 \\
+72h & 5,424.10 & 4,709.85 & 11.43 & 1.39 & 11.34 & 0.065 \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+\subsection{Interprétation par horizon}
+
+\subsubsection{Horizon 1 heure}
+
+\begin{itemize}
+    \item \textbf{RMSE = 74.63 MW} : Exceptionnellement faible, représentant seulement \textbf{0.13\%} de la consommation moyenne
+    \item \textbf{MAPE = 0.19\%} : Performance \textbf{excellente} pour une prévision à très court terme
+    \item \textbf{Interprétation} : À 1 heure, la consommation est très prévisible car elle suit des patterns horaires stables
+\end{itemize}
+
+\subsubsection{Horizons 6h à 72h}
+
+\begin{itemize}
+    \item \textbf{Performance stable} : Le MAPE reste autour de \textbf{11-12\%} pour tous les horizons
+    \item \textbf{MASE > 1} : Indique que le modèle fait \textbf{pire qu'une prévision naïve saisonnière}
+    \item \textbf{Theil's U < 0.1} : Indique que les erreurs sont \textbf{relativement faibles} par rapport à la variance des données
+    \item \textbf{Tendance} : Légère amélioration entre 12h et 72h, suggérant que certains patterns sont mieux capturés à moyen terme
+\end{itemize}
+
+\subsection{Coefficient de Theil (Theil's U)}
+
+Le coefficient de Theil mesure l'efficacité relative de la prévision :
+
+\begin{equation}
+    U = \frac{\sqrt{\frac{1}{n}\sum_{t=1}^{n}(C_t - \hat{C}_t)^2}}{\sqrt{\frac{1}{n}\sum_{t=1}^{n}C_t^2} + \sqrt{\frac{1}{n}\sum_{t=1}^{n}\hat{C}_t^2}}
+\end{equation}
+
+\textbf{Interprétation} :
+\begin{itemize}
+    \item \textbf{U < 0.1} : Prévision \textbf{excellente}
+    \item \textbf{0.1 ≤ U < 0.3} : Prévision \textbf{acceptable}
+    \item \textbf{U ≥ 0.3} : Prévision \textbf{faible}
+    \item Nos valeurs (0.062-0.070) indiquent des prévisions \textbf{de bonne qualité}
+\end{itemize}
+
+\section{Analyse de la Directional Accuracy}
+
+\subsection{Définition}
+
+La Directional Accuracy mesure la capacité du modèle à prédire correctement la direction du changement :
+
+\begin{equation}
+    \text{DA} = \frac{100}{n}\sum_{t=1}^{n}\mathbf{1}[\text{sign}(\Delta C_t) = \text{sign}(\Delta \hat{C}_t)]
+\end{equation}
+
+où $\Delta C_t = C_t - C_{t-1}$ et $\mathbf{1}[\cdot]$ est la fonction indicatrice.
+
+\subsection{Résultats}
+
+\begin{itemize}
+    \item \textbf{6h} : 20.0\% - \textcolor{red}{\textbf{Très faible}}, le modèle prédit mal la direction
+    \item \textbf{12h} : 36.4\% - \textcolor{orange}{\textbf{Faible}}, légèrement mieux qu'un tirage aléatoire (50\%)
+    \item \textbf{24h} : 39.1\% - \textcolor{orange}{\textbf{Faible}}
+    \item \textbf{48h} : 44.7\% - \textcolor{orange}{\textbf{Acceptable}}
+    \item \textbf{72h} : 43.7\% - \textcolor{orange}{\textbf{Acceptable}}
+\end{itemize}
+
+\textbf{Interprétation critique} :
+\begin{itemize}
+    \item Les valeurs < 50\% indiquent que le modèle a des difficultés à prédire si la consommation va augmenter ou diminuer
+    \item Cela suggère que les \textbf{changements de tendance} ne sont pas bien capturés
+    \item \textbf{Recommandation} : Intégrer des variables exogènes (température, événements) pour améliorer cette métrique
+\end{itemize}
+
+\section{Couverture des Intervalles de Confiance}
+
+\subsection{Définition}
+
+La couverture mesure le pourcentage de valeurs réelles qui se trouvent dans l'intervalle de confiance prédit :
+
+\begin{equation}
+    \text{Couverture}_{1-\alpha} = \frac{100}{n}\sum_{t=1}^{n}\mathbf{1}[C_t \in [\hat{C}_t^{lower}, \hat{C}_t^{upper}]]
+\end{equation}
+
+\subsection{Résultats}
+
+\begin{table}[h]
+\centering
+\caption{Couverture des intervalles de confiance}
+\label{tab:couverture}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Horizon} & \textbf{Couverture 80\%} & \textbf{Couverture 95\%} \\
+\midrule
+1h & 100.0\% & 100.0\% \\
+6h & 83.3\% & 100.0\% \\
+12h & 75.0\% & 100.0\% \\
+24h & 83.3\% & 100.0\% \\
+48h & 91.7\% & 100.0\% \\
+72h & 93.1\% & 100.0\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Interprétation}
+
+\textbf{Intervalles 95\%} :
+\begin{itemize}
+    \item \textbf{Couverture = 100\%} : Les intervalles sont \textbf{trop larges} (conservateurs)
+    \item Idéalement, on devrait avoir \textbf{95\%} de couverture pour un intervalle à 95\%
+    \item Cela indique une \textbf{surestimation de l'incertitude}
+\end{itemize}
+
+\textbf{Intervalles 80\%} :
+\begin{itemize}
+    \item Les valeurs varient entre 75\% et 93\%
+    \item Plus proches de la valeur cible de 80\%
+    \item Suggèrent une meilleure calibration pour les intervalles à 80\%
+\end{itemize}
+
+\section{Conclusion et Recommandations}
+
+\subsection{Synthèse des performances}
+
+Le modèle \textbf{ETS} est le meilleur parmi les trois testés, avec :
+\begin{itemize}
+    \item RMSE = 7,231 MW (12.4\% de la moyenne)
+    \item MAPE = 12.79\% (\textbf{acceptable} pour l'énergie)
+    \item R² négatif (-0.264) : \textbf{préoccupant}, nécessite amélioration
+\end{itemize}
+
+\subsection{Points forts}
+
+\begin{enumerate}
+    \item \textbf{Prévisions à très court terme} (1h) : Performance excellente (MAPE = 0.19\%)
+    \item \textbf{Stabilité} : Performance relativement stable sur différents horizons
+    \item \textbf{Theil's U} : Valeurs < 0.1 indiquent une bonne qualité globale
+    \item \textbf{Couverture} : Intervalles de confiance conservateurs mais sûrs
+\end{enumerate}
+
+\subsection{Points faibles}
+
+\begin{enumerate}
+    \item \textbf{R² négatif} : Le modèle fait pire qu'une prévision naïve
+    \item \textbf{Directional Accuracy faible} : Difficulté à prédire les changements de direction
+    \item \textbf{MASE > 1} : Performance inférieure à une prévision naïve saisonnière
+    \item \textbf{Intervalles trop larges} : Surestimation de l'incertitude
+\end{enumerate}
+
+\subsection{Recommandations pour amélioration}
+
+\subsubsection{Modélisation}
+
+\begin{enumerate}
+    \item \textbf{Modèles hybrides} : Combiner ETS avec des modèles de machine learning
+    \item \textbf{Variables exogènes} : Intégrer température, humidité, événements spéciaux
+    \item \textbf{Features engineering} : Créer des variables dérivées (lags, rolling means, etc.)
+    \item \textbf{Modèles non-linéaires} : Tester XGBoost, Random Forest, LSTM
+\end{enumerate}
+
+\subsubsection{Données}
+
+\begin{enumerate}
+    \item \textbf{Compléter les NA} : Imputer les valeurs manquantes (18/47 colonnes avec >50\% NA)
+    \item \textbf{Enrichir} : Ajouter données météo détaillées, indicateurs économiques
+    \item \textbf{Nettoyer} : Détecter et corriger les anomalies
+\end{enumerate}
+
+\subsubsection{Validation}
+
+\begin{enumerate}
+    \item \textbf{Validation croisée temporelle} : Tester sur différentes périodes
+    \item \textbf{Validation robustesse} : Tester sur données avec outliers, valeurs manquantes
+    \item \textbf{Backtesting} : Évaluer les performances sur données historiques
+\end{enumerate}
+
+\section{Formules Clés}
+
+\subsection{Métriques d'évaluation}
+
+\begin{align}
+    \text{RMSE} &= \sqrt{\frac{1}{n}\sum_{t=1}^{n}(C_t - \hat{C}_t)^2} \\
+    \text{MAE} &= \frac{1}{n}\sum_{t=1}^{n}|C_t - \hat{C}_t| \\
+    \text{MAPE} &= \frac{100}{n}\sum_{t=1}^{n}\left|\frac{C_t - \hat{C}_t}{C_t}\right| \\
+    \text{MASE} &= \frac{\text{MAE}}{\frac{1}{n-m}\sum_{t=m+1}^{n}|C_t - C_{t-m}|} \\
+    R^2 &= 1 - \frac{\sum_{t=1}^{n}(C_t - \hat{C}_t)^2}{\sum_{t=1}^{n}(C_t - \bar{C})^2}
+\end{align}
+
+\subsection{Interprétation des seuils}
+
+\begin{itemize}
+    \item \textbf{MAPE < 10\%} : Excellent
+    \item \textbf{10\% ≤ MAPE < 20\%} : Bon
+    \item \textbf{20\% ≤ MAPE < 50\%} : Acceptable
+    \item \textbf{MAPE ≥ 50\%} : Inacceptable
+    \item \textbf{MASE < 1} : Meilleur qu'une prévision naïve
+    \item \textbf{MASE ≥ 1} : Pire qu'une prévision naïve
+    \item \textbf{R² > 0.7} : Bon modèle
+    \item \textbf{0.3 < R² ≤ 0.7} : Modèle acceptable
+    \item \textbf{R² ≤ 0.3} : Modèle faible
+    \item \textbf{R² < 0} : Modèle pire qu'une moyenne simple
+\end{itemize}
+
+\vspace{1cm}
+
+\noindent\textbf{Note} : Les résultats présentés sont basés sur l'analyse de 1,154,808 observations horaires de consommation électrique en France sur la période 2012-2025. Les modèles ont été évalués selon des critères standards de la littérature en prévision de séries temporelles.
+
+\end{document}
+
+

@@ -1,0 +1,740 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[french]{babel}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{siunitx}
+\usepackage{enumitem}
+
+\geometry{margin=2.5cm}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+}
+
+\title{\textbf{Guide d'Amélioration des Résultats\\Modélisation de la Consommation Électrique}}
+\subtitle{Stratégies et Techniques pour Améliorer les Performances}
+\author{Projet Énergie France}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+Ce document présente des stratégies concrètes pour améliorer les performances des modèles de prévision de la consommation électrique. Basé sur l'analyse des résultats actuels (RMSE = 7,231 MW, MAPE = 12.79\%, R² = -0.264), nous proposons des solutions pratiques et implémentables.
+
+\section{Diagnostic des Problèmes Actuels}
+
+\subsection{Problèmes Identifiés}
+
+\begin{enumerate}
+    \item \textbf{R² négatif (-0.264)} : Le modèle fait pire qu'une prévision naïve
+    \item \textbf{MAPE élevé (12.79\%)} : Erreur relative importante
+    \item \textbf{Directional Accuracy faible (20-44\%)} : Difficulté à prédire la direction
+    \item \textbf{MASE > 1} : Performance inférieure à une prévision naïve saisonnière
+    \item \textbf{18/47 colonnes avec >50\% NA} : Données incomplètes
+\end{enumerate}
+
+\subsection{Causes Probables}
+
+\begin{itemize}
+    \item Non-stationnarité complexe non capturée
+    \item Saisonnalités multiples mal modélisées
+    \item Variables exogènes sous-exploitées
+    \item Features engineering insuffisant
+    \item Hyperparamètres non optimisés
+\end{itemize}
+
+\section{Stratégie 1 : Feature Engineering Avancé}
+
+\subsection{Création de Variables Dérivées}
+
+\subsubsection{Features Temporelles}
+
+Créer des variables cycliques pour capturer les patterns :
+
+\begin{align}
+    \text{Hour\_sin} &= \sin\left(\frac{2\pi \cdot \text{Heure}}{24}\right) \\
+    \text{Hour\_cos} &= \cos\left(\frac{2\pi \cdot \text{Heure}}{24}\right) \\
+    \text{Day\_sin} &= \sin\left(\frac{2\pi \cdot \text{JourSemaine}}{7}\right) \\
+    \text{Day\_cos} &= \cos\left(\frac{2\pi \cdot \text{JourSemaine}}{7}\right) \\
+    \text{Month\_sin} &= \sin\left(\frac{2\pi \cdot \text{Mois}}{12}\right) \\
+    \text{Month\_cos} &= \cos\left(\frac{2\pi \cdot \text{Mois}}{12}\right)
+\end{align}
+
+\textbf{Avantage} : Capture les patterns cycliques sans créer de discontinuités.
+
+\subsubsection{Features de Lag}
+
+Créer des variables de consommation décalées :
+
+\begin{align}
+    \text{Lag\_1h} &= C_{t-1} \\
+    \text{Lag\_24h} &= C_{t-24} \\
+    \text{Lag\_168h} &= C_{t-168} \text{ (1 semaine)}
+\end{align}
+
+\textbf{Avantage} : Capture l'autocorrélation temporelle.
+
+\subsubsection{Features de Rolling Statistics}
+
+Calculer des statistiques glissantes :
+
+\begin{align}
+    \text{MA\_24h} &= \frac{1}{24}\sum_{i=0}^{23} C_{t-i} \\
+    \text{MA\_168h} &= \frac{1}{168}\sum_{i=0}^{167} C_{t-i} \\
+    \text{Std\_24h} &= \sqrt{\frac{1}{24}\sum_{i=0}^{23}(C_{t-i} - \text{MA\_24h})^2} \\
+    \text{Min\_24h} &= \min_{i=0}^{23} C_{t-i} \\
+    \text{Max\_24h} &= \max_{i=0}^{23} C_{t-i}
+\end{align}
+
+\textbf{Avantage} : Capture les tendances locales et la volatilité.
+
+\subsubsection{Features d'Interaction}
+
+Créer des interactions entre variables :
+
+\begin{align}
+    \text{Temp\_Weekend} &= \text{Temperature} \times \text{EstWeekend} \\
+    \text{Temp\_Ferie} &= \text{Temperature} \times \text{EstFerie} \\
+    \text{Temp\_Lag24} &= \text{Temperature}_t \times C_{t-24}
+\end{align}
+
+\subsection{Implémentation R}
+
+\begin{verbatim}
+# Créer features cycliques
+df$Hour_sin <- sin(2 * pi * df$Heure / 24)
+df$Hour_cos <- cos(2 * pi * df$Heure / 24)
+df$Day_sin <- sin(2 * pi * df$JourSemaine / 7)
+df$Day_cos <- cos(2 * pi * df$JourSemaine / 7)
+
+# Créer lags
+library(dplyr)
+df <- df %>%
+  arrange(Date) %>%
+  mutate(
+    Lag_1h = lag(Consommation, 1),
+    Lag_24h = lag(Consommation, 24),
+    Lag_168h = lag(Consommation, 168)
+  )
+
+# Créer rolling statistics
+library(zoo)
+df <- df %>%
+  mutate(
+    MA_24h = rollmean(Consommation, 24, fill = NA, align = "right"),
+    MA_168h = rollmean(Consommation, 168, fill = NA, align = "right"),
+    Std_24h = rollapply(Consommation, 24, sd, fill = NA, align = "right")
+  )
+\end{verbatim}
+
+\section{Stratégie 2 : Gestion des Données Manquantes}
+
+\subsection{Stratégies d'Imputation}
+
+\subsubsection{Imputation Temporelle}
+
+Pour les séries temporelles, utiliser l'interpolation temporelle :
+
+\begin{align}
+    \text{Interpolation linéaire} &: C_t = C_{t-1} + \frac{C_{t+1} - C_{t-1}}{2} \\
+    \text{Forward fill} &: C_t = C_{t-1} \\
+    \text{Backward fill} &: C_t = C_{t+1} \\
+    \text{Spline} &: \text{Interpolation par splines cubiques}
+\end{align}
+
+\subsubsection{Imputation par Modèle}
+
+Utiliser un modèle pour prédire les valeurs manquantes :
+
+\begin{verbatim}
+# Imputation avec random forest
+library(missForest)
+df_imputed <- missForest(df, maxiter = 10, ntree = 100)
+
+# Imputation avec MICE (Multiple Imputation)
+library(mice)
+df_imputed <- mice(df, m = 5, method = "pmm", maxit = 10)
+\end{verbatim}
+
+\subsubsection{Imputation Conditionnelle}
+
+Imputer selon les conditions temporelles :
+
+\begin{verbatim}
+# Imputer température selon l'heure et la saison
+df <- df %>%
+  group_by(Heure, Mois) %>%
+  mutate(
+    Temperature = ifelse(
+      is.na(Temperature),
+      median(Temperature, na.rm = TRUE),
+      Temperature
+    )
+  )
+\end{verbatim}
+
+\subsection{Priorités d'Imputation}
+
+\begin{enumerate}
+    \item \textbf{Consommation} : Interpolation temporelle (critique)
+    \item \textbf{Température} : Modèle de prédiction ou moyenne conditionnelle
+    \item \textbf{Variables économiques} : Forward fill (changent peu)
+    \item \textbf{Variables calendrier} : Pas d'imputation nécessaire (déterministes)
+\end{enumerate}
+
+\section{Stratégie 3 : Modèles Avancés}
+
+\subsection{Modèles Hybrides}
+
+\subsubsection{ETS + Machine Learning}
+
+Combiner ETS avec XGBoost :
+
+\begin{align}
+    \hat{C}_t^{hybrid} &= \alpha \cdot \hat{C}_t^{ETS} + (1-\alpha) \cdot \hat{C}_t^{XGBoost}
+\end{align}
+
+où $\alpha$ est optimisé par validation croisée.
+
+\subsubsection{Stacking}
+
+Empiler plusieurs modèles :
+
+\begin{verbatim}
+# Modèles de base
+models <- list(
+  ets = model_ets,
+  arima = model_arima,
+  tbats = model_tbats,
+  xgboost = model_xgboost
+)
+
+# Meta-modèle (régression linéaire)
+meta_model <- lm(Consommation ~ ., data = predictions_base)
+\end{verbatim}
+
+\subsection{Modèles de Machine Learning}
+
+\subsubsection{XGBoost}
+
+Avantages :
+\begin{itemize}
+    \item Gère bien les non-linéarités
+    \item Feature importance automatique
+    \item Robust aux outliers
+\end{itemize}
+
+\begin{verbatim}
+library(xgboost)
+
+# Préparer données
+X_train <- as.matrix(df_train[, features])
+y_train <- df_train$Consommation
+
+# Entraîner modèle
+model_xgb <- xgboost(
+  data = X_train,
+  label = y_train,
+  nrounds = 1000,
+  max_depth = 6,
+  eta = 0.01,
+  subsample = 0.8,
+  colsample_bytree = 0.8,
+  objective = "reg:squarederror",
+  eval_metric = "rmse"
+)
+\end{verbatim}
+
+\subsubsection{LightGBM}
+
+Plus rapide que XGBoost, souvent meilleur :
+
+\begin{verbatim}
+library(lightgbm)
+
+# Créer dataset
+dtrain <- lgb.Dataset(X_train, label = y_train)
+
+# Paramètres
+params <- list(
+  objective = "regression",
+  metric = "rmse",
+  boosting_type = "gbdt",
+  num_leaves = 31,
+  learning_rate = 0.01,
+  feature_fraction = 0.8
+)
+
+# Entraîner
+model_lgb <- lgb.train(params, dtrain, nrounds = 1000)
+\end{verbatim}
+
+\subsubsection{Neural Networks (LSTM)}
+
+Pour capturer les dépendances longues :
+
+\begin{verbatim}
+library(keras)
+
+# Créer séquences
+create_sequences <- function(data, n_steps) {
+  X <- list()
+  y <- list()
+  for (i in 1:(nrow(data) - n_steps)) {
+    X[[i]] <- data[i:(i+n_steps-1), ]
+    y[[i]] <- data[i+n_steps, "Consommation"]
+  }
+  return(list(X = array(unlist(X), dim = c(length(X), n_steps, ncol(data))),
+              y = unlist(y)))
+}
+
+# Modèle LSTM
+model_lstm <- keras_model_sequential() %>%
+  layer_lstm(units = 50, return_sequences = TRUE, 
+             input_shape = c(n_steps, n_features)) %>%
+  layer_lstm(units = 50) %>%
+  layer_dense(units = 1) %>%
+  compile(optimizer = "adam", loss = "mse")
+\end{verbatim}
+
+\section{Stratégie 4 : Optimisation des Hyperparamètres}
+
+\subsection{Grid Search}
+
+Recherche exhaustive sur une grille :
+
+\begin{verbatim}
+# Grille de paramètres pour XGBoost
+param_grid <- expand.grid(
+  max_depth = c(4, 6, 8),
+  eta = c(0.01, 0.05, 0.1),
+  subsample = c(0.8, 0.9),
+  colsample_bytree = c(0.8, 0.9)
+)
+
+# Validation croisée
+best_score <- Inf
+best_params <- NULL
+
+for (i in 1:nrow(param_grid)) {
+  model <- xgboost(
+    data = X_train, label = y_train,
+    params = as.list(param_grid[i, ]),
+    nrounds = 1000,
+    early_stopping_rounds = 50
+  )
+  
+  score <- model$best_score
+  if (score < best_score) {
+    best_score <- score
+    best_params <- param_grid[i, ]
+  }
+}
+\end{verbatim}
+
+\subsection{Bayesian Optimization}
+
+Plus efficace que grid search :
+
+\begin{verbatim}
+library(rBayesianOptimization)
+
+# Fonction objectif
+xgb_cv_bayes <- function(max_depth, eta, subsample, colsample_bytree) {
+  model <- xgboost(
+    data = X_train, label = y_train,
+    max_depth = max_depth,
+    eta = eta,
+    subsample = subsample,
+    colsample_bytree = colsample_bytree,
+    nrounds = 1000,
+    cv = 5,
+    eval_metric = "rmse"
+  )
+  return(list(Score = -model$best_score, Pred = 0))
+}
+
+# Optimisation
+opt_result <- BayesianOptimization(
+  xgb_cv_bayes,
+  bounds = list(
+    max_depth = c(4L, 10L),
+    eta = c(0.01, 0.3),
+    subsample = c(0.6, 1.0),
+    colsample_bytree = c(0.6, 1.0)
+  ),
+  init_points = 10,
+  n_iter = 50
+)
+\end{verbatim}
+
+\section{Stratégie 5 : Enrichissement des Données}
+
+\subsection{Données Météo Complémentaires}
+
+Ajouter des variables météo supplémentaires :
+
+\begin{itemize}
+    \item \textbf{Humidité} : Impact sur le confort et la consommation
+    \item \textbf{Vitesse du vent} : Impact sur le refroidissement
+    \item \textbf{Précipitations} : Impact sur les activités extérieures
+    \item \textbf{Ensoleillement} : Impact sur le chauffage/refroidissement
+    \item \textbf{Pression atmosphérique} : Corrélée avec la température
+\end{itemize}
+
+\subsection{Indicateurs Économiques}
+
+Ajouter des variables économiques :
+
+\begin{itemize}
+    \item \textbf{PIB} : Corrélé avec l'activité économique
+    \item \textbf{Taux de chômage} : Impact sur la consommation résidentielle
+    \item \textbf{Inflation} : Impact sur les comportements
+    \item \textbf{Indices boursiers} : Indicateurs d'activité
+\end{itemize}
+
+\subsection{Données Temporelles Avancées}
+
+\begin{itemize}
+    \item \textbf{Jours fériés spécifiques} : Noël, Nouvel An, etc.
+    \item \textbf{Vacances scolaires} : Impact sur la consommation
+    \item \textbf{Événements spéciaux} : Matchs, concerts, etc.
+    \item \textbf{Changements d'heure} : Passage heure d'été/hiver
+\end{itemize}
+
+\section{Stratégie 6 : Amélioration de la Directional Accuracy}
+
+\subsection{Modèles de Classification}
+
+Prédire d'abord la direction, puis la magnitude :
+
+\begin{verbatim}
+# Créer variable direction
+df$Direction <- ifelse(
+  df$Consommation > lag(df$Consommation, 1),
+  "Up", "Down"
+)
+
+# Modèle de classification
+library(randomForest)
+model_direction <- randomForest(
+  Direction ~ .,
+  data = df[, c("Direction", features)],
+  ntree = 500
+)
+
+# Modèles séparés pour Up et Down
+model_up <- xgboost(...)  # Sur données où Direction = "Up"
+model_down <- xgboost(...)  # Sur données où Direction = "Down"
+\end{verbatim}
+
+\subsection{Features de Momentum}
+
+Créer des variables de momentum :
+
+\begin{align}
+    \text{Momentum\_1h} &= C_t - C_{t-1} \\
+    \text{Momentum\_24h} &= C_t - C_{t-24} \\
+    \text{Acceleration} &= (C_t - C_{t-1}) - (C_{t-1} - C_{t-2})
+\end{align}
+
+\section{Stratégie 7 : Validation et Sélection de Modèles}
+
+\subsection{Time Series Cross-Validation}
+
+Utiliser une validation croisée temporelle stricte :
+
+\begin{verbatim}
+# Fonction de validation croisée temporelle
+ts_cv <- function(data, n_splits = 5) {
+  n <- nrow(data)
+  train_size <- floor(n * 0.8)
+  test_size <- n - train_size
+  fold_size <- floor(test_size / n_splits)
+  
+  for (i in 1:n_splits) {
+    train_end <- train_size + (i - 1) * fold_size
+    test_start <- train_end + 1
+    test_end <- train_start + fold_size - 1
+    
+    train_data <- data[1:train_end, ]
+    test_data <- data[test_start:test_end, ]
+    
+    # Entraîner et évaluer
+    model <- train_model(train_data)
+    score <- evaluate_model(model, test_data)
+  }
+}
+\end{verbatim}
+
+\subsection{Walk-Forward Validation}
+
+Validation progressive dans le temps :
+
+\begin{verbatim}
+walk_forward_validation <- function(data, window_size = 365*24) {
+  n <- nrow(data)
+  scores <- c()
+  
+  for (i in (window_size + 1):n) {
+    train_data <- data[(i - window_size):(i - 1), ]
+    test_data <- data[i, ]
+    
+    model <- train_model(train_data)
+    pred <- predict(model, test_data)
+    score <- calculate_metric(test_data$Consommation, pred)
+    scores <- c(scores, score)
+  }
+  
+  return(mean(scores))
+}
+\end{verbatim}
+
+\section{Stratégie 8 : Post-Processing}
+
+\subsection{Calibration des Intervalles}
+
+Ajuster les intervalles de confiance pour qu'ils soient bien calibrés :
+
+\begin{verbatim}
+# Ajuster les intervalles pour avoir 95% de couverture
+calibrate_intervals <- function(predictions, actual, target_coverage = 0.95) {
+  errors <- actual - predictions$mean
+  current_coverage <- mean(
+    errors >= predictions$lower & errors <= predictions$upper
+  )
+  
+  # Ajuster la largeur des intervalles
+  adjustment_factor <- target_coverage / current_coverage
+  predictions$lower <- predictions$mean - 
+    (predictions$mean - predictions$lower) * adjustment_factor
+  predictions$upper <- predictions$mean + 
+    (predictions$upper - predictions$mean) * adjustment_factor
+  
+  return(predictions)
+}
+\end{verbatim}
+
+\subsection{Lissage des Prévisions}
+
+Appliquer un lissage pour réduire la volatilité :
+
+\begin{align}
+    \hat{C}_t^{smoothed} &= \alpha \cdot \hat{C}_t + (1-\alpha) \cdot \hat{C}_{t-1}^{smoothed}
+\end{align}
+
+\section{Plan d'Action Priorisé}
+
+\subsection{Priorité 1 : Feature Engineering (Impact élevé, Effort moyen)}
+
+\begin{enumerate}
+    \item Créer features cycliques (sin/cos)
+    \item Ajouter lags (1h, 24h, 168h)
+    \item Calculer rolling statistics
+    \item \textbf{Gain attendu} : -10 à -20\% RMSE
+\end{enumerate}
+
+\subsection{Priorité 2 : Imputation des Données (Impact élevé, Effort élevé)}
+
+\begin{enumerate}
+    \item Imputer température avec modèle
+    \item Compléter variables économiques
+    \item \textbf{Gain attendu} : -5 à -10\% RMSE
+\end{enumerate}
+
+\subsection{Priorité 3 : Modèles ML (Impact très élevé, Effort élevé)}
+
+\begin{enumerate}
+    \item Implémenter XGBoost/LightGBM
+    \item Tester LSTM pour dépendances longues
+    \item \textbf{Gain attendu} : -15 à -30\% RMSE
+\end{enumerate}
+
+\subsection{Priorité 4 : Optimisation (Impact moyen, Effort moyen)}
+
+\begin{enumerate}
+    \item Optimiser hyperparamètres
+    \item Tester différents modèles
+    \item \textbf{Gain attendu} : -5 à -10\% RMSE
+\end{enumerate}
+
+\subsection{Priorité 5 : Enrichissement Données (Impact moyen, Effort très élevé)}
+
+\begin{enumerate}
+    \item Ajouter données météo complémentaires
+    \item Intégrer événements spéciaux
+    \item \textbf{Gain attendu} : -3 à -8\% RMSE
+\end{enumerate}
+
+\section{Objectifs Réalistes}
+
+\subsection{Objectifs à Court Terme (1-2 mois)}
+
+\begin{itemize}
+    \item \textbf{RMSE} : 7,231 → 6,000 MW (\textbf{-17\%})
+    \item \textbf{MAPE} : 12.79\% → 10\% (\textbf{-22\%})
+    \item \textbf{R²} : -0.264 → 0.2 (\textbf{positif})
+    \item \textbf{DA} : 20-44\% → 50-60\%
+\end{itemize}
+
+\subsection{Objectifs à Moyen Terme (3-6 mois)}
+
+\begin{itemize}
+    \item \textbf{RMSE} : 6,000 → 5,000 MW (\textbf{-17\%})
+    \item \textbf{MAPE} : 10\% → 8\% (\textbf{-20\%})
+    \item \textbf{R²} : 0.2 → 0.5 (\textbf{bon modèle})
+    \item \textbf{DA} : 50-60\% → 60-70\%
+\end{itemize}
+
+\subsection{Objectifs à Long Terme (6-12 mois)}
+
+\begin{itemize}
+    \item \textbf{RMSE} : 5,000 → 4,000 MW (\textbf{-20\%})
+    \item \textbf{MAPE} : 8\% → 6\% (\textbf{-25\%})
+    \item \textbf{R²} : 0.5 → 0.7 (\textbf{excellent})
+    \item \textbf{DA} : 60-70\% → 70-80\%
+\end{itemize}
+
+\section{Code R Complet d'Exemple}
+
+\subsection{Pipeline Complet}
+
+\begin{verbatim}
+# ============================================================================
+# PIPELINE COMPLET D'AMÉLIORATION
+# ============================================================================
+
+library(tidyverse)
+library(xgboost)
+library(zoo)
+library(lubridate)
+
+# 1. Charger données
+df <- read.csv("data/dataset_complet.csv")
+df$Date <- as.POSIXct(df$Date)
+
+# 2. Feature Engineering
+df <- df %>%
+  arrange(Date) %>%
+  mutate(
+    # Features cycliques
+    Hour_sin = sin(2 * pi * Heure / 24),
+    Hour_cos = cos(2 * pi * Heure / 24),
+    Day_sin = sin(2 * pi * JourSemaine / 7),
+    Day_cos = cos(2 * pi * JourSemaine / 7),
+    Month_sin = sin(2 * pi * Mois / 12),
+    Month_cos = cos(2 * pi * Mois / 12),
+    
+    # Lags
+    Lag_1h = lag(Consommation, 1),
+    Lag_24h = lag(Consommation, 24),
+    Lag_168h = lag(Consommation, 168),
+    
+    # Rolling statistics
+    MA_24h = rollmean(Consommation, 24, fill = NA, align = "right"),
+    MA_168h = rollmean(Consommation, 168, fill = NA, align = "right"),
+    Std_24h = rollapply(Consommation, 24, sd, fill = NA, align = "right"),
+    
+    # Momentum
+    Momentum_1h = Consommation - lag(Consommation, 1),
+    Momentum_24h = Consommation - lag(Consommation, 24)
+  )
+
+# 3. Imputation
+df <- df %>%
+  group_by(Heure, Mois) %>%
+  mutate(
+    Temperature = ifelse(
+      is.na(Temperature),
+      median(Temperature, na.rm = TRUE),
+      Temperature
+    )
+  ) %>%
+  ungroup()
+
+# 4. Préparer features
+features <- c(
+  "Hour_sin", "Hour_cos", "Day_sin", "Day_cos", "Month_sin", "Month_cos",
+  "Lag_1h", "Lag_24h", "Lag_168h",
+  "MA_24h", "MA_168h", "Std_24h",
+  "Momentum_1h", "Momentum_24h",
+  "Temperature", "EstWeekend", "EstFerie"
+)
+
+# 5. Diviser train/test
+train_size <- floor(nrow(df) * 0.8)
+train_data <- df[1:train_size, ]
+test_data <- df[(train_size + 1):nrow(df), ]
+
+# 6. Entraîner XGBoost
+X_train <- as.matrix(train_data[, features])
+y_train <- train_data$Consommation
+X_test <- as.matrix(test_data[, features])
+y_test <- test_data$Consommation
+
+model_xgb <- xgboost(
+  data = X_train,
+  label = y_train,
+  nrounds = 1000,
+  max_depth = 6,
+  eta = 0.01,
+  subsample = 0.8,
+  colsample_bytree = 0.8,
+  objective = "reg:squarederror",
+  eval_metric = "rmse",
+  early_stopping_rounds = 50
+)
+
+# 7. Prédictions
+predictions <- predict(model_xgb, X_test)
+
+# 8. Évaluation
+rmse <- sqrt(mean((y_test - predictions)^2))
+mape <- mean(abs((y_test - predictions) / y_test)) * 100
+r_squared <- 1 - sum((y_test - predictions)^2) / 
+             sum((y_test - mean(y_test))^2)
+
+cat("RMSE:", rmse, "\n")
+cat("MAPE:", mape, "%\n")
+cat("R²:", r_squared, "\n")
+\end{verbatim}
+
+\section{Conclusion}
+
+L'amélioration des résultats nécessite une approche systématique combinant :
+\begin{enumerate}
+    \item \textbf{Feature engineering} avancé
+    \item \textbf{Gestion} des données manquantes
+    \item \textbf{Modèles} de machine learning
+    \item \textbf{Optimisation} des hyperparamètres
+    \item \textbf{Validation} rigoureuse
+\end{enumerate}
+
+En suivant ces stratégies, il est réaliste d'atteindre :
+\begin{itemize}
+    \item \textbf{RMSE} : 7,231 → 4,000-5,000 MW (\textbf{-30 à -45\%})
+    \item \textbf{MAPE} : 12.79\% → 6-8\% (\textbf{-37 à -53\%})
+    \item \textbf{R²} : -0.264 → 0.5-0.7 (\textbf{modèle excellent})
+    \item \textbf{DA} : 20-44\% → 70-80\% (\textbf{bonne prédiction de direction})
+\end{itemize}
+
+\vspace{1cm}
+
+\noindent\textbf{Note} : Ces améliorations nécessitent un investissement en temps et ressources, mais les gains en performance justifient l'effort.
+
+\end{document}
+
+
