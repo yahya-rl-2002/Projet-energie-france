@@ -28,6 +28,8 @@ data/archive_anciens_scripts/**/*
 01_Donnees/data/*backup*.csv
 
 # Résultats générés (peuvent être régénérés)
+data/dataset_horaire.csv
+data/resultats_corriges/
 data/resultats_nouveaux/**/*.csv
 data/resultats_nouveaux/**/*.png
 data/resultats_nouveaux/**/*.pdf
@@ -125,4 +127,3 @@ api_keys.txt
 # Cache
 .cache/
 *.cache
-

@@ -1,3 +1,5 @@
+> **Document historique.** Les anciens scores et commandes ne décrivent plus le pipeline courant. Consulter le README à la racine et `docs/resultats_corriges/RAPPORT.md`.
+
 # 🔮 PRÉVISIONS AVANCÉES
 
 Ce dossier contient les scripts pour générer et évaluer des prévisions avancées.

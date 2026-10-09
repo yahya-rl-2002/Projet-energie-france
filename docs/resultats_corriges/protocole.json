@@ -1,0 +1,46 @@
+{
+  "genere_utc": "2026-10-09 11:57:31 UTC",
+  "config": {
+    "annee_validation": 2024,
+    "annee_test": 2025,
+    "train_heures": 1344,
+    "horizons": [1, 24, 168],
+    "horizon_selection": 24,
+    "modeles": ["Persistance", "Naif_24h", "Naif_168h", "ETS", "ARIMA"]
+  },
+  "selection_validation": "ARIMA",
+  "date_origine_previsions_utc": "2025-11-13 13:00:00 UTC",
+  "type_scores": "Erreurs cumulées des pas 1 à H, agrégées sur toutes les origines admissibles",
+  "donnees": {
+    "lignes_source": 486446,
+    "lignes_sans_consommation_positive": 228097,
+    "doublons_identiques_retires": 0,
+    "lignes_heure_ambigue_exclues": 30,
+    "lignes_heure_inexistante_exclues": 30,
+    "heures_grille": 121576,
+    "heures_completes": 121547,
+    "heures_manquantes_ou_incompletes": 29,
+    "fuseau_source": "Europe/Paris",
+    "fuseau_grille": "UTC",
+    "debut_utc": "2011-12-31 23:00:00 UTC",
+    "fin_utc": "2025-11-13 14:00:00 UTC",
+    "type_source": "RTE_brut",
+    "sources": [
+      {
+        "fichier": "RTE_annuels_combines.csv",
+        "md5": "a6e2650939b7ef03c22456969c2e2703"
+      },
+      {
+        "fichier": "RTE_en_cours_combines.csv",
+        "md5": "8391d870764e84e618aa1f8ae817f0e5"
+      }
+    ]
+  },
+  "code_md5": {
+    "EXECUTER_TOUT.R": "80f1860b0d94730284cecb75e6f0f59d",
+    "config_horaire.json": "ba8c42c83af17a58b577bd00523897ac",
+    "series_horaires.R": "076310a7dd190f6e17b933e0f2647224",
+    "preparer_donnees_horaires.R": "ff599b9d9158ad4a306c5dfe6ec1843d",
+    "validation_horaire.R": "243a23cd9c4b5e0a930a2e1b0faa4172"
+  }
+}

@@ -1,3 +1,5 @@
+> **Document historique.** Les anciens scores et commandes ne décrivent plus le pipeline courant. Consulter le README à la racine et `docs/resultats_corriges/RAPPORT.md`.
+
 # 📚 GUIDE COMPLET DE A À Z : JUSQU'AU DASHBOARD
 
 **Date** : 2025-11-14  

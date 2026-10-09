@@ -1,3 +1,5 @@
+> **Document historique.** Les anciens scores et commandes ne décrivent plus le pipeline courant. Consulter le README à la racine et `docs/resultats_corriges/RAPPORT.md`.
+
 # 📊 VALIDATION ET TESTS DES MODÈLES
 
 Ce dossier contient les scripts de validation et de tests de robustesse pour les modèles de prévision.

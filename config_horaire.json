@@ -1,0 +1,8 @@
+{
+  "annee_validation": 2024,
+  "annee_test": 2025,
+  "train_heures": 1344,
+  "horizons": [1, 24, 168],
+  "horizon_selection": 24,
+  "modeles": ["Persistance", "Naif_24h", "Naif_168h", "ETS", "ARIMA"]
+}

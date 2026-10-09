@@ -1,3 +1,5 @@
+> **Document historique.** Les anciens scores et commandes ne décrivent plus le pipeline courant. Consulter le README à la racine et `docs/resultats_corriges/RAPPORT.md`.
+
 # 📊 VERSION R DU PROJET
 ## Système Intelligent de Prévision Énergétique Française
 
