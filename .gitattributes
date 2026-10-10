@@ -1,0 +1,2 @@
+# Les PDF sont des documents binaires, pas des fichiers source à normaliser.
+*.pdf binary

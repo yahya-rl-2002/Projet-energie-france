@@ -4,6 +4,20 @@ Ce projet compare cinq méthodes de prévision sur les données RTE : persistanc
 
 **Les résultats initiaux (RMSE ETS de 7 231 MW et « 1,15 million d'observations horaires ») ont été invalidés par l'audit du traitement temporel.** Le dataset initial contenait des horodatages répétés et l'échantillonnage perdait la fréquence saisonnière. Les résultats courants sont dans le [rapport recalculé](docs/resultats_corriges/RAPPORT.md), avec les [scores de validation](docs/resultats_corriges/metriques_validation.csv), les [scores de test](docs/resultats_corriges/metriques_test.csv) et le [protocole reproductible](docs/resultats_corriges/protocole.json).
 
+## Comparaison des versions et rapport complet
+
+Le [rapport comparatif complet](docs/comparaison_versions/RAPPORT_COMPLET.md) détaille l’ancienne méthode, les corrections, les résultats à 1/24/168 h, les journées de test, les intervalles et les limites. Une [version PDF de 13 pages](output/pdf/Rapport_complet_comparaison_energie_france.pdf) est disponible pour lecture et partage.
+
+Pour régénérer ce rapport à partir de l’instantané analysé, sans réentraîner les modèles :
+
+```sh
+python3 -m venv .venv-rapport
+.venv-rapport/bin/python -m pip install -r 07_Rapport/requirements_rapport.txt
+.venv-rapport/bin/python 07_Rapport/generer_comparaison_complete.py
+```
+
+Le générateur vérifie la date du calcul analysé. Si les modèles sont recalculés sur un autre instantané, il faut actualiser l’analyse rédigée avant de republier le rapport.
+
 ## Exécuter
 
 Depuis un terminal :

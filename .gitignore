@@ -127,3 +127,8 @@ api_keys.txt
 # Cache
 .cache/
 *.cache
+
+# Rapport comparatif partageable et fichiers temporaires
+!output/pdf/Rapport_complet_comparaison_energie_france.pdf
+tmp/pdfs/
+.venv-rapport/
